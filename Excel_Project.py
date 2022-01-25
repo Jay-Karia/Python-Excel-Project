@@ -28,7 +28,17 @@ def ReadJSONData():
             last_4_digits.append(account_number[len(account_number)-4]+account_number[len(account_number)-3]+account_number[len(account_number)-2]+account_number[len(account_number)-1])
             account_numbers_list.append(last_4_digits[i])
             WriteAccountNo(account_numbers_list)
-            workbook.save(output_file_name)
+
+        # Getting the info under block E22
+        for i in range(0, total_bank_accounts):
+            daily_balance = data['response']['bank_accounts'][i]['daily_balances']
+            beginning_date = list(daily_balance.keys())[0]
+            beginning_balance = list(daily_balance.values())[0]
+            end_date = list(daily_balance.keys())[len(daily_balance)-1]
+            end_balance = list(daily_balance.values())[len(daily_balance)-1]
+        
+        
+
 
 def WriteAccountNo(account_numbers):
     if len(account_numbers) == 1:
@@ -41,3 +51,4 @@ def WriteAccountNo(account_numbers):
         worksheet['G74'] = account_numbers[3]
 
 ReadJSONData()
+workbook.save(output_file_name)
