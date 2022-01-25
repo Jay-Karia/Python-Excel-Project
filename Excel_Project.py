@@ -48,21 +48,24 @@ def ReadJSONData():
             WriteBalanceAndDate(beginning_balance, end_balance)
 
         # Getting other data under block E22
-        estimates_revenue_month_sum = 0
+        estimated_revenue_list = []
         for j in range(0, total_bank_accounts):
+            sum = 0
             estimated_revenue = data['response']['bank_accounts'][j]['estimated_revenue_by_month']
             temp_values = list(estimated_revenue.values())
             for i in range(0, len(temp_values)):
                 temp_values[i] = float(temp_values[i])
-
-        deposits_month_sum = 0
-        for j in range(0, total_bank_accounts):
-            deposits_month = data['response']['bank_accounts'][i]['deposits_sum_by_month']
-            temp_deposits = list(deposits_month.values())
-            temp_deposits[j] = float(temp_deposits[j])
-            deposits_month_sum+=temp_deposits[j]
-
-        #deposits_month_sum -= estimates_revenue_month_sum
+                sum+=temp_values[i]
+            estimated_revenue_list.append(sum)
+            WriteEstimatedRevenue(estimated_revenue_list)
+            
+        #deposits_month_sum = 0
+        #for j in range(0, total_bank_accounts):
+        #    deposits_month = data['response']['bank_accounts'][i]['deposits_sum_by_month']
+        #    temp_deposits = list(deposits_month.values())
+        #    temp_deposits[j] = float(temp_deposits[j])
+        #    deposits_month_sum+=temp_deposits[j]
+        #deposits_month_sum -= sum
 
 # Other Write Methods
 def WriteAccountNo(account_numbers):
@@ -97,8 +100,13 @@ def WriteBalanceAndDate(b_balance, e_balance):
         worksheet['H45'] = b_balance[3]
         worksheet['L45'] = e_balance[3]
 
-def WriteEstimatedRevenue(er):
-    pass
+def WriteEstimatedRevenue(estimated_revenue):
+    if len(estimated_revenue) == 1:
+        worksheet['G23'] = estimated_revenue[0]
+    elif len(estimated_revenue) == 2:
+        worksheet['G46'] = estimated_revenue[1]
+    elif len(estimated_revenue) == 3:
+        worksheet['G69'] = estimated_revenue[2] 
 
 ReadJSONData()
 workbook.save(output_file_name)
