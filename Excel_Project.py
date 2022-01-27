@@ -45,7 +45,7 @@ def ReadJSONData():
             beginning_balance.insert(i, list(daily_balance.values())[0])
             end_date.insert(i, list(daily_balance.keys())[len(daily_balance)-1])
             end_balance.insert(i, list(daily_balance.values())[len(daily_balance)-1])
-            WriteBalanceAndDate(beginning_balance, end_balance)
+            WriteBalanceAndDate(beginning_balance, end_balance, beginning_date, end_date)
 
         # Getting other data under block E22
         estimated_revenue_list = []
@@ -59,13 +59,21 @@ def ReadJSONData():
             estimated_revenue_list.append(sum)
             WriteEstimatedRevenue(estimated_revenue_list)
             
-        #deposits_month_sum = 0
-        #for j in range(0, total_bank_accounts):
-        #    deposits_month = data['response']['bank_accounts'][i]['deposits_sum_by_month']
-        #    temp_deposits = list(deposits_month.values())
-        #    temp_deposits[j] = float(temp_deposits[j])
-        #    deposits_month_sum+=temp_deposits[j]
-        #deposits_month_sum -= sum
+        deposits_list = []
+        final_deposits_list = []
+        for j in range(0, total_bank_accounts):
+            final_deposits = 0
+            d_sum = 0
+            deposits_month = data['response']['bank_accounts'][j]['deposits_sum_by_month']
+            temp_deposits = list(deposits_month.values())
+            for i in range(0, len(temp_values)):
+                temp_deposits[i] = float(temp_deposits[i])
+                d_sum+=temp_deposits[i]
+            deposits_list.append(d_sum)
+            for i in range(0, len(estimated_revenue_list)):
+                final_deposits = d_sum - estimated_revenue_list[i]
+            final_deposits_list.append(final_deposits)
+            WriteDeposits(final_deposits_list)
 
 # Other Write Methods
 def WriteAccountNo(account_numbers):
@@ -80,20 +88,26 @@ def WriteAccountNo(account_numbers):
     else:
         print("Bank Accounts cannot be more than 4")
 
-def WriteBalanceAndDate(b_balance, e_balance):
+def WriteBalanceAndDate(b_balance, e_balance, b_date, e_date):
     if len(b_balance) == 1 or len(e_balance) == 1:
         worksheet['H22'] = b_balance[0]
         worksheet['L22'] = e_balance[0]
+        worksheet['F22'] = b_date[0]
+        worksheet['J22'] = e_date[0]
 
     elif len(b_balance) == 2 or e_balance == 2:
 
         worksheet['H45'] = b_balance[1]
         worksheet['L45'] = e_balance[1]
+        worksheet['F45'] = b_date[1]
+        worksheet['J45'] = e_date[1]
 
     elif len(b_balance) == 3 or e_balance == 3:
 
         worksheet['H68'] = b_balance[2]
         worksheet['L68'] = e_balance[2]
+        worksheet['F68'] = b_date[2]
+        worksheet['J68'] = e_date[2]
 
     elif len(b_balance) == 4 or e_balance == 4:
 
@@ -107,6 +121,14 @@ def WriteEstimatedRevenue(estimated_revenue):
         worksheet['G46'] = estimated_revenue[1]
     elif len(estimated_revenue) == 3:
         worksheet['G69'] = estimated_revenue[2] 
+
+def WriteDeposits(deposits):
+    if len(deposits) == 1:
+        worksheet['H24'] = deposits[0]
+    elif len(deposits) == 2:
+        worksheet['H47'] = deposits[1]
+    elif len(deposits) == 3:
+        worksheet['H70'] = deposits[2]
 
 ReadJSONData()
 workbook.save(output_file_name)
