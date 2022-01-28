@@ -105,49 +105,56 @@ def WriteAccountNo(account_numbers):
 
 def WriteBalanceAndDate(b_balance, e_balance, b_date, e_date):
     if len(b_balance) == 1 or len(e_balance) == 1:
-        worksheet['H22'] = b_balance[0]
-        worksheet['L22'] = e_balance[0]
+        worksheet['I22'] = b_balance[0]
+        worksheet['O22'] = e_balance[0]
         worksheet['F22'] = b_date[0]
-        worksheet['J22'] = e_date[0]
+        worksheet['L22'] = e_date[0]
 
     elif len(b_balance) == 2 or e_balance == 2:
 
-        worksheet['H45'] = b_balance[1]
-        worksheet['L45'] = e_balance[1]
+        worksheet['I45'] = b_balance[1]
+        worksheet['O45'] = e_balance[1]
         worksheet['F45'] = b_date[1]
-        worksheet['J45'] = e_date[1]
+        worksheet['L45'] = e_date[1]
 
     elif len(b_balance) == 3 or e_balance == 3:
 
-        worksheet['H68'] = b_balance[2]
-        worksheet['L68'] = e_balance[2]
+        worksheet['I68'] = b_balance[2]
+        worksheet['O68'] = e_balance[2]
         worksheet['F68'] = b_date[2]
-        worksheet['J68'] = e_date[2]
+        worksheet['L68'] = e_date[2]
 
     elif len(b_balance) == 4 or e_balance == 4:
 
-        worksheet['H45'] = b_balance[3]
-        worksheet['L45'] = e_balance[3]
+        worksheet['I91'] = b_balance[3]
+        worksheet['O91'] = e_balance[3]
+        worksheet['F91'] = b_date[3]
+        worksheet['L91'] = e_date[3]
 
 def WriteEstimatedRevenue(estimated_revenue):
     if len(estimated_revenue) == 1:
-        worksheet['G23'] = estimated_revenue[0]
+        worksheet['I23'] = estimated_revenue[0]
     elif len(estimated_revenue) == 2:
-        worksheet['G46'] = estimated_revenue[1]
+        worksheet['I46'] = estimated_revenue[1]
     elif len(estimated_revenue) == 3:
-        worksheet['G69'] = estimated_revenue[2] 
+        worksheet['I69'] = estimated_revenue[2]
+    elif len(estimated_revenue) == 4:
+        worksheet['I92'] = estimated_revenue[3] 
 
 def WriteDeposits(deposits):
     if len(deposits) == 1:
-        worksheet['H24'] = deposits[0]
+        worksheet['I24'] = deposits[0]
     elif len(deposits) == 2:
-        worksheet['H47'] = deposits[1]
+        worksheet['I47'] = deposits[1]
     elif len(deposits) == 3:
-        worksheet['H70'] = deposits[2]
+        worksheet['I70'] = deposits[2]
+    elif len(deposits) == 4:
+        worksheet['I93'] = deposits[3]
 
 def WriteReamainingData(deposit_sum, begin_date, total_bank_accounts):
     start_block = [8, 31, 54, 77]
     for i in range(0, len(begin_date)):
+        deposit_sum[i] = float(deposit_sum[i])
         if total_bank_accounts == 0:
             worksheet[f'E{start_block[0]+i}'] = begin_date[i]
             worksheet[f'F{start_block[0]+i}'] = deposit_sum[i]
