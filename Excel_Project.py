@@ -24,18 +24,23 @@ def ReadJSONData():
     global end_date
     global end_balance
 
-    with open("CE_Analytics.json") as json_file:
+    with open("CE_00_Analytics.json") as json_file:
         data = json.load(json_file)
         # Getting the total account numbers
         bank_accounts = data['response']['bank_accounts']
         # Update the excel file with json bank_accounts number and replacing with F2 block in excel
         total_bank_accounts = len(bank_accounts)
+        if total_bank_accounts > 4:
+            total_bank_accounts = 4
         worksheet['F2'] = total_bank_accounts
         # Getting the last 4 digits of account number
         for i in range(0, total_bank_accounts):
             account_number = data['response']['bank_accounts'][i]['account_number']
-            last_4_digits.append(account_number[len(account_number)-4]+account_number[len(account_number)-3]+account_number[len(account_number)-2]+account_number[len(account_number)-1])
-            account_numbers_list.append(last_4_digits[i])
+            if len(account_number) > 4:
+                last_4_digits.append(account_number[len(account_number)-4]+account_number[len(account_number)-3]+account_number[len(account_number)-2]+account_number[len(account_number)-1])
+                account_numbers_list.append(last_4_digits[i])
+            elif len(account_number) <= 4:
+                account_numbers_list.append(account_number)
             WriteAccountNo(account_numbers_list)
 
         # Getting the info under block E22
@@ -74,6 +79,15 @@ def ReadJSONData():
                 final_deposits = d_sum - estimated_revenue_list[i]
             final_deposits_list.append(final_deposits)
             WriteDeposits(final_deposits_list)
+        
+            # Begin Date
+            for i in range(0, total_bank_accounts):
+                begin_dates = []
+                total_periods = len(data['response']['bank_accounts'][i]['periods'])
+                for j in range(0, total_periods):
+                    temp_begin_date = data['response']['bank_accounts'][i]['periods'][j]['begin_date']
+                    begin_dates.append(temp_begin_date)
+                print(begin_dates)
 
 # Other Write Methods
 def WriteAccountNo(account_numbers):
@@ -85,8 +99,6 @@ def WriteAccountNo(account_numbers):
         worksheet['G51'] = account_numbers[2]
     elif len(account_numbers) == 4:
         worksheet['G74'] = account_numbers[3]
-    else:
-        print("Bank Accounts cannot be more than 4")
 
 def WriteBalanceAndDate(b_balance, e_balance, b_date, e_date):
     if len(b_balance) == 1 or len(e_balance) == 1:
