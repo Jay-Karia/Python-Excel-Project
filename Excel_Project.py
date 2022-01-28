@@ -83,11 +83,14 @@ def ReadJSONData():
             # Begin Date
             for i in range(0, total_bank_accounts):
                 begin_dates = []
+                deposit_sums = []
                 total_periods = len(data['response']['bank_accounts'][i]['periods'])
                 for j in range(0, total_periods):
                     temp_begin_date = data['response']['bank_accounts'][i]['periods'][j]['begin_date']
+                    temp_deposits_sum = data['response']['bank_accounts'][i]['periods'][j]['deposit_sum']
                     begin_dates.append(temp_begin_date)
-                print(begin_dates)
+                    deposit_sums.append(temp_deposits_sum)
+                WriteReamainingData(deposit_sums, begin_dates, i)
 
 # Other Write Methods
 def WriteAccountNo(account_numbers):
@@ -141,6 +144,22 @@ def WriteDeposits(deposits):
         worksheet['H47'] = deposits[1]
     elif len(deposits) == 3:
         worksheet['H70'] = deposits[2]
+
+def WriteReamainingData(deposit_sum, begin_date, total_bank_accounts):
+    start_block = [8, 31, 54, 77]
+    for i in range(0, len(begin_date)):
+        if total_bank_accounts == 0:
+            worksheet[f'E{start_block[0]+i}'] = begin_date[i]
+            worksheet[f'F{start_block[0]+i}'] = deposit_sum[i]
+        elif total_bank_accounts == 1:
+            worksheet[f'E{start_block[1]+i}'] = begin_date[i]
+            worksheet[f'F{start_block[1]+i}'] = deposit_sum[i]
+        elif total_bank_accounts == 2:
+            worksheet[f'E{start_block[2]+i}'] = begin_date[i]
+            worksheet[f'F{start_block[2]+i}'] = deposit_sum[i]
+        elif total_bank_accounts == 3:
+            worksheet[f'E{start_block[3]+i}'] = begin_date[i]
+            worksheet[f'F{start_block[3]+i}'] = deposit_sum[i]
 
 ReadJSONData()
 workbook.save(output_file_name)
