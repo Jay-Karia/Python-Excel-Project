@@ -168,5 +168,9 @@ def WriteReamainingData(deposit_sum, begin_date, total_bank_accounts):
             worksheet[f'E{start_block[3]+i}'] = begin_date[i]
             worksheet[f'F{start_block[3]+i}'] = deposit_sum[i]
 
-ReadJSONData()
-workbook.save(output_file_name)
+try:
+    ReadJSONData()
+    workbook.save(output_file_name)
+    print(f"Excel File: \"{output_file_name}\", Successfully created!")
+except:
+   print("Could not generate Excel File!")
