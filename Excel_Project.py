@@ -1,12 +1,9 @@
 from openpyxl import load_workbook
 from tkinter import *
-import requests
 import json
 
-req = requests.get("https://api.ocrolus.com/v1/book/summary")
-json_req = req.json()
-
 # Globals
+
 account_numbers_list = []
 last_4_digits = []
 
@@ -21,6 +18,10 @@ input_json_file = "CE_00_analytics.json"
 
 
 def ReadAndWrite():
+    global input_file_name
+    global input_json_file
+    global output_file_name
+    
 
     workbook = load_workbook(input_file_name)
     worksheet = workbook['Deposits']
@@ -175,16 +176,16 @@ def ReadAndWrite():
         start_block = [8, 31, 54, 77]
         for i in range(0, len(begin_date)):
             deposit_sum[i] = float(deposit_sum[i])
-            if total_bank_accounts == 1:
+            if total_bank_accounts == 0:
                 worksheet[f'E{start_block[0]+i}'] = begin_date[i]
                 worksheet[f'F{start_block[0]+i}'] = deposit_sum[i]
-            elif total_bank_accounts == 2:
+            elif total_bank_accounts == 1:
                 worksheet[f'E{start_block[1]+i}'] = begin_date[i]
                 worksheet[f'F{start_block[1]+i}'] = deposit_sum[i]
-            elif total_bank_accounts == 3:
+            elif total_bank_accounts == 2:
                 worksheet[f'E{start_block[2]+i}'] = begin_date[i]
                 worksheet[f'F{start_block[2]+i}'] = deposit_sum[i]
-            elif total_bank_accounts == 4:
+            elif total_bank_accounts == 3:
                 worksheet[f'E{start_block[3]+i}'] = begin_date[i]
                 worksheet[f'F{start_block[3]+i}'] = deposit_sum[i]
 
@@ -203,10 +204,7 @@ def GUI():
     root = Tk()
     root.title("Excel Generation")
     root.geometry("700x550")
-    try:
-        root.iconbitmap("excel.ico")
-    except:
-        pass
+    root.iconbitmap("excel.ico")
     root.resizable(width=False, height=False)
 
     input_file_name = StringVar()
@@ -232,13 +230,14 @@ def GUI():
     input_json_text_field = Entry(root, bg="light yellow", textvariable=input_json_file, width=100, justify=CENTER)
     input_json_text_field.pack()
 
+
+    gen_btn = Button(root, text="Generate", bg="blue", fg="white", font="Consolas 10 bold", anchor="w", width=13, command=ReadAndWrite)
+    gen_btn.pack(pady=40)
+
     input_file_name = str(input_file_name.get())
     output_file_name = str(output_file_name.get())
     input_json_file = str(input_json_file.get())
-
-    gen_btn = Button(root, text="Generate", bg="blue", fg="white", font="Consolas 10 bold", anchor="w", width=13, command=ReadAndWrite(input_file_name, output_file_name, input_json_file))
-    gen_btn.pack(pady=40)
-
+    
     root.mainloop()
 
 ReadAndWrite()
