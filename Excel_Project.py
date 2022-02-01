@@ -1,10 +1,12 @@
-from ctypes import alignment
 from openpyxl import load_workbook
 from tkinter import *
+import requests
 import json
 
-# Globals
+req = requests.get("https://api.ocrolus.com/v1/book/summary")
+json_req = req.json()
 
+# Globals
 account_numbers_list = []
 last_4_digits = []
 
@@ -13,16 +15,12 @@ beginning_balance = []
 end_date = []
 end_balance = []
 
-input_file_name = ""
-output_file_name = ""
-input_json_file = ""
+input_file_name = "Template.xlsx"
+output_file_name = "Final.xlsx"
+input_json_file = "CE_00_analytics.json"
 
 
 def ReadAndWrite():
-    global input_file_name
-    global input_json_file
-    global output_file_name
-    
 
     workbook = load_workbook(input_file_name)
     worksheet = workbook['Deposits']
@@ -109,6 +107,7 @@ def ReadAndWrite():
                         data['response']['bank_accounts'][i]['periods'])
                     for j in range(0, total_periods):
                         temp_begin_date = data['response']['bank_accounts'][i]['periods'][j]['begin_date']
+                        temp_begin_date = temp_begin_date.replace(temp_begin_date[2]+temp_begin_date[3]+temp_begin_date[4], '')
                         temp_deposits_sum = data['response']['bank_accounts'][i]['periods'][j]['deposit_sum']
                         begin_dates.append(temp_begin_date)
                         deposit_sums.append(temp_deposits_sum)
@@ -176,22 +175,22 @@ def ReadAndWrite():
         start_block = [8, 31, 54, 77]
         for i in range(0, len(begin_date)):
             deposit_sum[i] = float(deposit_sum[i])
-            if total_bank_accounts == 0:
+            if total_bank_accounts == 1:
                 worksheet[f'E{start_block[0]+i}'] = begin_date[i]
                 worksheet[f'F{start_block[0]+i}'] = deposit_sum[i]
-            elif total_bank_accounts == 1:
+            elif total_bank_accounts == 2:
                 worksheet[f'E{start_block[1]+i}'] = begin_date[i]
                 worksheet[f'F{start_block[1]+i}'] = deposit_sum[i]
-            elif total_bank_accounts == 2:
+            elif total_bank_accounts == 3:
                 worksheet[f'E{start_block[2]+i}'] = begin_date[i]
                 worksheet[f'F{start_block[2]+i}'] = deposit_sum[i]
-            elif total_bank_accounts == 3:
+            elif total_bank_accounts == 4:
                 worksheet[f'E{start_block[3]+i}'] = begin_date[i]
                 worksheet[f'F{start_block[3]+i}'] = deposit_sum[i]
 
 
     # try:
-    ReadJSONData(input_json_file)
+    ReadJSONData()
     workbook.save(output_file_name)
     print(f"Excel File: \"{output_file_name}\", Successfully created!")
 
@@ -204,7 +203,10 @@ def GUI():
     root = Tk()
     root.title("Excel Generation")
     root.geometry("700x550")
-    root.iconbitmap("excel.ico")
+    try:
+        root.iconbitmap("excel.ico")
+    except:
+        pass
     root.resizable(width=False, height=False)
 
     input_file_name = StringVar()
@@ -230,14 +232,13 @@ def GUI():
     input_json_text_field = Entry(root, bg="light yellow", textvariable=input_json_file, width=100, justify=CENTER)
     input_json_text_field.pack()
 
-
-    gen_btn = Button(root, text="Generate", bg="blue", fg="white", font="Consolas 10 bold", anchor="w", width=13, command=ReadAndWrite)
-    gen_btn.pack(pady=40)
-
     input_file_name = str(input_file_name.get())
     output_file_name = str(output_file_name.get())
     input_json_file = str(input_json_file.get())
-    
+
+    gen_btn = Button(root, text="Generate", bg="blue", fg="white", font="Consolas 10 bold", anchor="w", width=13, command=ReadAndWrite(input_file_name, output_file_name, input_json_file))
+    gen_btn.pack(pady=40)
+
     root.mainloop()
 
-GUI()
+ReadAndWrite()
