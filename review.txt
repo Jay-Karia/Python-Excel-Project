@@ -1,0 +1,7 @@
+Notes from first review
+
+Applicable to all tables
+    Rows Q8 to Q19 . Value should be "Bank_accounts"."periods"."estimated_revenue_by_month” - not understood
+    Field Pn should be Qn- Fn - not understood 
+        Beginning Balance should be the first balance value (not the case of for account ending 2) - done, but not understood
+        Deposits not included in estimated revenue looks off. It should be = say f43-i46 - got it how to do but not done
