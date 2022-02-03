@@ -82,6 +82,7 @@ def ReadAndWrite():
                     temp_values[i] = float(temp_values[i])
                     sum += temp_values[i]
                 estimated_revenue_list.append(sum)
+                Write_Q_Column(temp_values, j)
                 WriteEstimatedRevenue(estimated_revenue_list)
 
             deposits_list = []
@@ -93,7 +94,6 @@ def ReadAndWrite():
                 temp_deposits = list(deposits_month.values())
                 for i in range(0, len(temp_values)):
                     temp_deposits[i] = float(temp_deposits[i])
-                    Write_Q_Column(temp_deposits, j)
                     d_sum += temp_deposits[i]
                 deposits_list.append(d_sum)
                 for i in range(0, len(estimated_revenue_list)):
@@ -184,11 +184,11 @@ def ReadAndWrite():
 
     def Write_Q_Column(temp_deposits, total_bank_accounts):
         start_blocks = [8, 31, 54, 77]
+        print(temp_deposits)
         for i in range(0, len(temp_deposits)):
             if i > 11:
                 pass
             else:
-                print(i)
                 temp_deposits[i] = float(temp_deposits[i])
                 if total_bank_accounts == 0:
                     worksheet[f'Q{start_blocks[0]+i}'] = temp_deposits[i]
