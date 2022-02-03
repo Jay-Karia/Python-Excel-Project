@@ -93,12 +93,12 @@ def ReadAndWrite():
                 temp_deposits = list(deposits_month.values())
                 for i in range(0, len(temp_values)):
                     temp_deposits[i] = float(temp_deposits[i])
+                    Write_Q_Column(temp_deposits, j)
                     d_sum += temp_deposits[i]
                 deposits_list.append(d_sum)
                 for i in range(0, len(estimated_revenue_list)):
                     final_deposits = d_sum - estimated_revenue_list[i]
                 final_deposits_list.append(final_deposits)
-                WriteDeposits(final_deposits_list)
 
                 # Begin Date
                 for i in range(0, total_bank_accounts):
@@ -125,6 +125,9 @@ def ReadAndWrite():
             worksheet['G74'] = account_numbers[3]
 
     def WriteBalanceAndDate(b_balance, e_balance, b_date, e_date):
+        for i in range(len(b_balance)):
+            b_balance[i] = float(b_balance[i])
+            e_balance[i] = float(e_balance[i])
         if len(b_balance) == 1 or len(e_balance) == 1:
             worksheet['I22'] = b_balance[0]
             worksheet['O22'] = e_balance[0]
@@ -162,16 +165,6 @@ def ReadAndWrite():
         elif len(estimated_revenue) == 4:
             worksheet['I92'] = estimated_revenue[3]
 
-    def WriteDeposits(deposits):
-        if len(deposits) == 1:
-            worksheet['I24'] = deposits[0]
-        elif len(deposits) == 2:
-            worksheet['I47'] = deposits[1]
-        elif len(deposits) == 3:
-            worksheet['I70'] = deposits[2]
-        elif len(deposits) == 4:
-            worksheet['I93'] = deposits[3]
-
     def WriteReamainingData(deposit_sum, begin_date, total_bank_accounts):
         start_block = [8, 31, 54, 77]
         for i in range(0, len(begin_date)):
@@ -188,6 +181,23 @@ def ReadAndWrite():
             elif total_bank_accounts == 3:
                 worksheet[f'E{start_block[3]+i}'] = begin_date[i]
                 worksheet[f'F{start_block[3]+i}'] = deposit_sum[i]
+
+    def Write_Q_Column(temp_deposits, total_bank_accounts):
+        start_blocks = [8, 31, 54, 77]
+        for i in range(0, len(temp_deposits)):
+            if i > 11:
+                pass
+            else:
+                print(i)
+                temp_deposits[i] = float(temp_deposits[i])
+                if total_bank_accounts == 0:
+                    worksheet[f'Q{start_blocks[0]+i}'] = temp_deposits[i]
+                elif total_bank_accounts == 1:
+                    worksheet[f'Q{start_blocks[1]+i}'] = temp_deposits[i]
+                elif total_bank_accounts == 2:
+                    worksheet[f'Q{start_blocks[2]+i}'] = temp_deposits[i]
+                elif total_bank_accounts == 3:
+                    worksheet[f'Q{start_blocks[3]+i}'] = temp_deposits[i]
 
 
     # try:
