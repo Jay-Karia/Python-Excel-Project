@@ -3,7 +3,6 @@ from tkinter import *
 import json
 
 # Globals
-
 account_numbers_list = []
 last_4_digits = []
 
@@ -11,21 +10,22 @@ beginning_date = []
 beginning_balance = []
 end_date = []
 end_balance = []
+start_block = [8, 31, 54, 77]
 
 input_file_name = "Template.xlsx"
 output_file_name = "Final.xlsx"
 input_json_file = "CE_00_analytics.json"
 
-
+def APICall():
+    global input_json_file
+    
 def ReadAndWrite():
     global input_file_name
     global input_json_file
     global output_file_name
     
-
     workbook = load_workbook(input_file_name)
     worksheet = workbook['Deposits']
-
 
     def ReadJSONData():
         global account_numbers_list
@@ -34,9 +34,7 @@ def ReadAndWrite():
         global beginning_balance
         global end_date
         global end_balance
-        global input_file_name
         global input_json_file
-        global output_file_name
 
         if not input_json_file.endswith('.json'):
             input_json_file = f"{input_json_file}.json"
@@ -133,23 +131,17 @@ def ReadAndWrite():
             worksheet['O22'] = e_balance[0]
             worksheet['F22'] = b_date[0]
             worksheet['L22'] = e_date[0]
-
         elif len(b_balance) == 2 or e_balance == 2:
-
             worksheet['I45'] = b_balance[1]
             worksheet['O45'] = e_balance[1]
             worksheet['F45'] = b_date[1]
             worksheet['L45'] = e_date[1]
-
         elif len(b_balance) == 3 or e_balance == 3:
-
             worksheet['I68'] = b_balance[2]
             worksheet['O68'] = e_balance[2]
             worksheet['F68'] = b_date[2]
             worksheet['L68'] = e_date[2]
-
         elif len(b_balance) == 4 or e_balance == 4:
-
             worksheet['I91'] = b_balance[3]
             worksheet['O91'] = e_balance[3]
             worksheet['F91'] = b_date[3]
@@ -166,7 +158,6 @@ def ReadAndWrite():
             worksheet['I92'] = estimated_revenue[3]
 
     def WriteReamainingData(deposit_sum, begin_date, total_bank_accounts):
-        start_block = [8, 31, 54, 77]
         for i in range(0, len(begin_date)):
             deposit_sum[i] = float(deposit_sum[i])
             if total_bank_accounts == 0:
@@ -183,71 +174,21 @@ def ReadAndWrite():
                 worksheet[f'F{start_block[3]+i}'] = deposit_sum[i]
 
     def Write_Q_Column(temp_deposits, total_bank_accounts):
-        start_blocks = [8, 31, 54, 77]
-        print(temp_deposits)
         for i in range(0, len(temp_deposits)):
-            if i > 11:
-                pass
-            else:
+            if not i > 11:
                 temp_deposits[i] = float(temp_deposits[i])
                 if total_bank_accounts == 0:
-                    worksheet[f'Q{start_blocks[0]+i}'] = temp_deposits[i]
+                    worksheet[f'Q{start_block[0]+i}'] = temp_deposits[i]
                 elif total_bank_accounts == 1:
-                    worksheet[f'Q{start_blocks[1]+i}'] = temp_deposits[i]
+                    worksheet[f'Q{start_block[1]+i}'] = temp_deposits[i]
                 elif total_bank_accounts == 2:
-                    worksheet[f'Q{start_blocks[2]+i}'] = temp_deposits[i]
+                    worksheet[f'Q{start_block[2]+i}'] = temp_deposits[i]
                 elif total_bank_accounts == 3:
-                    worksheet[f'Q{start_blocks[3]+i}'] = temp_deposits[i]
+                    worksheet[f'Q{start_block[3]+i}'] = temp_deposits[i]
 
-
-    # try:
     ReadJSONData()
     workbook.save(output_file_name)
     print(f"Excel File: \"{output_file_name}\", Successfully created!")
 
-# Graphical User Interface
-def GUI():
-    global input_file_name
-    global input_json_file
-    global output_file_name
-    
-    root = Tk()
-    root.title("Excel Generation")
-    root.geometry("700x550")
-    root.iconbitmap("excel.ico")
-    root.resizable(width=False, height=False)
-
-    input_file_name = StringVar()
-    output_file_name = StringVar()
-    input_json_file = StringVar()
-
-    header = Label(root, text="Excel Generation", bg="yellow",
-                fg="black", font="Consolas 20 bold")
-    header.pack(fill="x")
-
-    input_excel = Label(root, text="Input Excel File Name (*.xlsx): ", font="Consolas 10 bold", anchor="w", bg="black", fg="white", width=53, justify=CENTER)
-    input_excel.pack(pady=20)
-    input_excel_text_field = Entry(root, bg="light yellow", textvariable=input_file_name, width=100, justify=CENTER)
-    input_excel_text_field.pack()
-
-    output_excel = Label(root, text="Output Excel File Name (*.xlsx): ", font="Consolas 10 bold", anchor="w", bg="black", fg="white", width=53, justify=CENTER)
-    output_excel.pack(pady=30)
-    output_excel_text_field = Entry(root, bg="light yellow", textvariable=output_file_name, width=100, justify=CENTER)
-    output_excel_text_field.pack()
-
-    input_json = Label(root, text="Input JSON File Name (*.json): ", font="Consolas 10 bold", anchor="w", bg="black", fg="white", width=53, justify=CENTER)
-    input_json.pack(pady=30)
-    input_json_text_field = Entry(root, bg="light yellow", textvariable=input_json_file, width=100, justify=CENTER)
-    input_json_text_field.pack()
-
-
-    gen_btn = Button(root, text="Generate", bg="blue", fg="white", font="Consolas 10 bold", anchor="w", width=13, command=ReadAndWrite)
-    gen_btn.pack(pady=40)
-
-    input_file_name = str(input_file_name.get())
-    output_file_name = str(output_file_name.get())
-    input_json_file = str(input_json_file.get())
-    
-    root.mainloop()
-
+APICall()
 ReadAndWrite()
