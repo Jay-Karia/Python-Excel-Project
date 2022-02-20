@@ -87,36 +87,19 @@ def ReadAndWrite():
                 estimated_revenue_list.append(sum)
                 WriteEstimatedRevenue(estimated_revenue_list)
 
-            # deposits_list = []
-            # final_deposits_list = []
-            # for j in range(0, total_bank_accounts):
-            #     final_deposits = 0
-            #     d_sum = 0
-            #     deposits_month = data['response']['bank_accounts'][j]['deposits_sum_by_month']
-            #     temp_deposits = list(deposits_month.values())
-            #     for i in range(0, len(temp_values)):
-            #         temp_deposits[i] = float(temp_deposits[i])
-            #         d_sum += temp_deposits[i]
-            #     deposits_list.append(d_sum)
-            #     for i in range(0, len(estimated_revenue_list)):
-            #         final_deposits = d_sum - estimated_revenue_list[i]
-            #     final_deposits_list.append(final_deposits)
-            #     # WriteDeposits(final_deposits_list)
-
             # Begin Date
             for i in range(0, total_bank_accounts):
                 begin_dates = []
                 deposit_sums = []
-                total_periods = len(
-                    data['response']['bank_accounts'][i]['periods'])
-                for j in range(0, total_periods):
-                    temp_begin_date = data['response']['bank_accounts'][i]['periods'][j]['begin_date']
-                    temp_begin_date = temp_begin_date.replace(temp_begin_date[2]+temp_begin_date[3]+temp_begin_date[4], '')
-                    begin_dates.append(temp_begin_date)
                 temp_deposits = data['response']['bank_accounts'][i]['estimated_revenue_by_month']
+                temp_dates = data['response']['bank_accounts'][i]['estimated_revenue_by_month']
+
                 deposit_sums = list(temp_deposits.values())
+                begin_dates = list(temp_dates.keys())
+
                 deposit_sums.reverse()
                 begin_dates.reverse()
+
                 WriteReamainingData(deposit_sums, begin_dates, i)
                 
     # Other Write Methods
@@ -171,19 +154,13 @@ def ReadAndWrite():
         elif len(estimated_revenue) == 4:
             worksheet['I92'] = estimated_revenue[3]
 
-    def WriteDeposits(deposits):
-        if len(deposits) == 1:
-            worksheet['I24'] = deposits[0]
-        elif len(deposits) == 2:
-            worksheet['I47'] = deposits[1]
-        elif len(deposits) == 3:
-            worksheet['I70'] = deposits[2]
-        elif len(deposits) == 4:
-            worksheet['I93'] = deposits[3]
-
     def WriteReamainingData(deposit_sum, begin_date, total_bank_accounts):
         start_block = [8, 31, 54, 77]
         try:
+            print(f"{deposit_sum[12]}\t\t{begin_date[12]}")
+            if len(deposit_sum>12):
+                deposit_sum.pop(12)
+                begin_date.pop(12)
             for i in range(0, len(begin_date)):
                 deposit_sum[i] = float(deposit_sum[i])
                 if total_bank_accounts == 0:
@@ -252,4 +229,4 @@ def GUI():
     
     root.mainloop()
 
-ReadAndWrite()
+ReadAndWrite()  
