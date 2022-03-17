@@ -94,6 +94,7 @@ def ReadAndWrite(bookpk):
             WriteEstimatedRevenue(estimated_revenue_list)
 
         # Begin Date
+        excel_dates = []
         for i in range(0, total_bank_accounts):
             begin_dates = []
             deposit_sums = []
@@ -103,13 +104,14 @@ def ReadAndWrite(bookpk):
             deposit_sums = list(temp_deposits.values())
             begin_dates = list(temp_dates.keys())
 
+            excel_dates.append(begin_dates)
+
             deposit_sums.reverse()
             begin_dates.reverse()
 
             WriteRemainingData(deposit_sums, begin_dates, i)
 
         # Deposits Box (G:N)
-        len_amounts = []
         for i in range(0, total_bank_accounts):
             temp_dates_and_amount = {}
             temp_raw = data['response']['bank_accounts'][i]['non_estimated_revenue_txns_list']
@@ -127,17 +129,26 @@ def ReadAndWrite(bookpk):
                 temp_amount_list.append(temp_dates_and_amount[g][1])
                 temp_dates_list.append(temp_dates_and_amount[g][0])
 
-            len_amounts.append(len(temp_amount_list))
-            WriteInExcel_non_estimated_revenue_txns_list(temp_amount_list,temp_dates_list, i, len_amounts)
+
+            WriteInExcel_non_estimated_revenue_txns_list(temp_amount_list,excel_dates, temp_dates_list, i, temp_dates_and_amount, temp_amount_list)
 
     # Other Write Methods
-    def WriteInExcel_non_estimated_revenue_txns_list(sorted_amounts, dates,total_bank_accounts, total_amounts):
-        months = []
-        index = []
-        for i in range(0, len(sorted_amounts)):
-            months.append(dates[i][0]+dates[i][1])
-            index.append(12-int(months[i]))
-            print(f"{sorted_amounts[i]}\t\t{months[i]}\t{index[i]}")
+    def WriteInExcel_non_estimated_revenue_txns_list(sorted_amounts, excel_dates, dates,total_bank_accounts, temp_dates_and_amount, amounts):
+        # months = []
+        # years = []
+        # date = []
+        # index = []
+        # total_amounts = len(amounts)
+        # for i in range(0, len(sorted_amounts)):
+        #     months.append(dates[i][0]+dates[i][1])
+        #     years.append(dates[i][6]+dates[i][7]+dates[i][8]+dates[i][9])
+        #     index.append(12-int(months[i]))
+        #     date.append(f"{months[i]}-{years[i]}")
+        #     data = f"{sorted_amounts[i]} \t\t{date[i]} \t\t{index[i]}"
+            # print(data)
+            # if i == total_amounts-1:
+            #     print("\n")
+        pass
 
     def WriteAccountNo(account_numbers):
         if len(account_numbers) == 1:
