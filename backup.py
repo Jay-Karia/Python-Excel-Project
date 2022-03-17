@@ -1,6 +1,12 @@
+from requests.auth import HTTPBasicAuth
 from openpyxl import load_workbook
+from datetime import datetime
 from tkinter import *
+import requests
 import json
+import csv
+import tkinter as tk
+import time
 
 # Globals
 
@@ -13,11 +19,10 @@ end_date = []
 end_balance = []
 
 input_file_name = "Template.xlsx"
-output_file_name = "Final.xlsx"
-input_json_file = "CE_00_analytics.json"
+output_file_name = "Report"
+input_json_file = "APIResponse.json"
 
-
-def ReadAndWrite():
+def ReadAndWrite(bookpk):
     global input_file_name
     global input_json_file
     global output_file_name
@@ -42,78 +47,103 @@ def ReadAndWrite():
             input_json_file = f"{input_json_file}.json"
         with open(input_json_file) as json_file:
             data = json.load(json_file)
-            # Getting the total account numbers
-            bank_accounts = data['response']['bank_accounts']
-            # Update the excel file with json bank_accounts number and replacing with F2 block in excel
-            total_bank_accounts = len(bank_accounts)
-            if total_bank_accounts > 4:
-                total_bank_accounts = 4
-            worksheet['F2'] = total_bank_accounts
-            # Getting the last 4 digits of account number
-            for i in range(0, total_bank_accounts):
-                account_number = data['response']['bank_accounts'][i]['account_number']
-                if len(account_number) > 4:
-                    last_4_digits.append(account_number[len(account_number)-4]+account_number[len(
-                        account_number)-3]+account_number[len(account_number)-2]+account_number[len(account_number)-1])
-                    account_numbers_list.append(last_4_digits[i])
-                elif len(account_number) <= 4:
-                    account_numbers_list.append(account_number)
-                WriteAccountNo(account_numbers_list)
+            
+            # Getting the total bank account numbers
+        bank_accounts = data['response']['bank_accounts']
+        
+        # Update the excel file with json bank_accounts number and replacing with F2 block in excel
+        total_bank_accounts = len(bank_accounts)
+        if total_bank_accounts > 4:
+            total_bank_accounts = 4
+        worksheet['F2'] = total_bank_accounts
+        
+        # Getting the last 4 digits of account number
+        for i in range(0, total_bank_accounts):
+            account_number = data['response']['bank_accounts'][i]['account_number']
+            if len(account_number) > 4:
+                last_4_digits.append(account_number[len(account_number)-4]+account_number[len(
+                    account_number)-3]+account_number[len(account_number)-2]+account_number[len(account_number)-1])
+                account_numbers_list.append(last_4_digits[i])
+            elif len(account_number) <= 4:
+                account_numbers_list.append(account_number)
+            WriteAccountNo(account_numbers_list)
 
-            # Getting the info under block E22
-            for i in range(0, total_bank_accounts):
-                daily_balance = data['response']['bank_accounts'][i]['daily_balances']
-                beginning_date.insert(i, list(daily_balance.keys())[0])
-                beginning_balance.insert(i, list(daily_balance.values())[0])
-                end_date.insert(i, list(daily_balance.keys())
-                                [len(daily_balance)-1])
-                end_balance.insert(i, list(daily_balance.values())[
-                                len(daily_balance)-1])
-                WriteBalanceAndDate(beginning_balance,
-                                    end_balance, beginning_date, end_date)
+        # Getting the info under block E22
+        for i in range(0, total_bank_accounts):
+            daily_balance = data['response']['bank_accounts'][i]['daily_balances']
+            beginning_date.insert(i, list(daily_balance.keys())[0])
+            beginning_balance.insert(i, list(daily_balance.values())[0])
+            end_date.insert(i, list(daily_balance.keys())
+                            [len(daily_balance)-1])
+            end_balance.insert(i, list(daily_balance.values())[
+                            len(daily_balance)-1])
+            WriteBalanceAndDate(beginning_balance,
+                                end_balance, beginning_date, end_date)
 
-            # Getting other data under block E22
-            estimated_revenue_list = []
-            for j in range(0, total_bank_accounts):
-                sum = 0
-                estimated_revenue = data['response']['bank_accounts'][j]['estimated_revenue_by_month']
-                temp_values = list(estimated_revenue.values())
-                for i in range(0, len(temp_values)):
-                    temp_values[i] = float(temp_values[i])
-                    sum += temp_values[i]
-                estimated_revenue_list.append(sum)
-                Write_Q_Column(temp_values, j)
-                WriteEstimatedRevenue(estimated_revenue_list)
+        # Getting other data under block E22
+        estimated_revenue_list = []
+        for j in range(0, total_bank_accounts):
+            sum = 0
+            estimated_revenue = data['response']['bank_accounts'][j]['estimated_revenue_by_month']
+            temp_values = list(estimated_revenue.values())
+            for i in range(0, len(temp_values)):
+                temp_values[i] = float(temp_values[i])
+                sum += temp_values[i]
+            estimated_revenue_list.append(sum)
+            WriteEstimatedRevenue(estimated_revenue_list)
 
-            deposits_list = []
-            final_deposits_list = []
-            for j in range(0, total_bank_accounts):
-                final_deposits = 0
-                d_sum = 0
-                deposits_month = data['response']['bank_accounts'][j]['deposits_sum_by_month']
-                temp_deposits = list(deposits_month.values())
-                for i in range(0, len(temp_values)):
-                    temp_deposits[i] = float(temp_deposits[i])
-                    d_sum += temp_deposits[i]
-                deposits_list.append(d_sum)
-                for i in range(0, len(estimated_revenue_list)):
-                    final_deposits = d_sum - estimated_revenue_list[i]
-                final_deposits_list.append(final_deposits)
+        # Begin Date
+        for i in range(0, total_bank_accounts):
+            begin_dates = []
+            deposit_sums = []
+            temp_deposits = data['response']['bank_accounts'][i]['estimated_revenue_by_month']
+            temp_dates = data['response']['bank_accounts'][i]['estimated_revenue_by_month']
 
-                # Begin Date
-                for i in range(0, total_bank_accounts):
-                    begin_dates = []
-                    deposit_sums = []
-                    total_periods = len(
-                        data['response']['bank_accounts'][i]['periods'])
-                    for j in range(0, total_periods):
-                        temp_begin_date = data['response']['bank_accounts'][i]['periods'][j]['begin_date']
-                        temp_begin_date = temp_begin_date.replace(temp_begin_date[2]+temp_begin_date[3]+temp_begin_date[4], '')
-                        temp_deposits_sum = data['response']['bank_accounts'][i]['periods'][j]['deposit_sum']
-                        begin_dates.append(temp_begin_date)
-                        deposit_sums.append(temp_deposits_sum)
-                    WriteReamainingData(deposit_sums, begin_dates, i)
+            deposit_sums = list(temp_deposits.values())
+            begin_dates = list(temp_dates.keys())
+
+            deposit_sums.reverse()
+            begin_dates.reverse()
+
+            WriteRemainingData(deposit_sums, begin_dates, i)
+
+        # Deposits Box (G:N)
+        for i in range(0, total_bank_accounts):
+            temp_dates_and_amount = {}
+            temp_raw = data['response']['bank_accounts'][i]['non_estimated_revenue_txns_list']
+            for j in range(0, len(temp_raw)):
+                temp_amounts = temp_raw[j]['amount']
+                temp_dates = temp_raw[j]['txn_date']
+                temp_dates_and_amount[temp_dates] = temp_amounts
+
+            temp_dates_and_amount = list(sorted(temp_dates_and_amount.items(), key = lambda x:datetime.strptime(x[0], '%m/%d/%Y'), reverse=False))
+
+            temp_amount_list = []
+            temp_dates_list = []
+
+            for g in range(0, len(temp_dates_and_amount)):
+                temp_amount_list.append(temp_dates_and_amount[g][1])
+                temp_dates_list.append(temp_dates_and_amount[g][0])
+
+            # print(temp_dates_list)
+            WriteInExcel_non_estimated_revenue_txns_list(temp_amount_list, i)
+
     # Other Write Methods
+    def WriteInExcel_non_estimated_revenue_txns_list(sorted_amounts, total_bank_accounts):
+        start_block = ['G', 'H', 'I', 'J', 'K', 'L', 'M']
+        if len(sorted_amounts)>7:
+            del sorted_amounts[7:]
+        for i in range(len(sorted_amounts)):
+            sorted_amounts[i] = float(sorted_amounts[i])
+            if total_bank_accounts == 0:
+                worksheet[f'{start_block[i]}8'] = sorted_amounts[i]
+            elif total_bank_accounts == 1:
+                worksheet[f'{start_block[i]}31'] = sorted_amounts[i]
+            elif total_bank_accounts == 2:
+                worksheet[f'{start_block[i]}54'] = sorted_amounts[i]
+            elif total_bank_accounts == 3:
+                worksheet[f'{start_block[i]}77'] = sorted_amounts[i]
+
     def WriteAccountNo(account_numbers):
         if len(account_numbers) == 1:
             worksheet['G5'] = account_numbers[0]
@@ -165,89 +195,95 @@ def ReadAndWrite():
         elif len(estimated_revenue) == 4:
             worksheet['I92'] = estimated_revenue[3]
 
-    def WriteReamainingData(deposit_sum, begin_date, total_bank_accounts):
+    def WriteRemainingData(deposit_sum, begin_date, total_bank_accounts):
         start_block = [8, 31, 54, 77]
-        for i in range(0, len(begin_date)):
-            deposit_sum[i] = float(deposit_sum[i])
-            if total_bank_accounts == 0:
-                worksheet[f'E{start_block[0]+i}'] = begin_date[i]
-                worksheet[f'F{start_block[0]+i}'] = deposit_sum[i]
-            elif total_bank_accounts == 1:
-                worksheet[f'E{start_block[1]+i}'] = begin_date[i]
-                worksheet[f'F{start_block[1]+i}'] = deposit_sum[i]
-            elif total_bank_accounts == 2:
-                worksheet[f'E{start_block[2]+i}'] = begin_date[i]
-                worksheet[f'F{start_block[2]+i}'] = deposit_sum[i]
-            elif total_bank_accounts == 3:
-                worksheet[f'E{start_block[3]+i}'] = begin_date[i]
-                worksheet[f'F{start_block[3]+i}'] = deposit_sum[i]
-
-    def Write_Q_Column(temp_deposits, total_bank_accounts):
-        start_blocks = [8, 31, 54, 77]
-        print(temp_deposits)
-        for i in range(0, len(temp_deposits)):
-            if i > 11:
-                pass
-            else:
-                temp_deposits[i] = float(temp_deposits[i])
+        try:
+            if len(deposit_sum)>12:
+                del deposit_sum[12:]
+                del begin_date[12:]
+            for i in range(0, len(begin_date)):
+                deposit_sum[i] = float(deposit_sum[i])
                 if total_bank_accounts == 0:
-                    worksheet[f'Q{start_blocks[0]+i}'] = temp_deposits[i]
+                    worksheet[f'E{start_block[0]+i}'] = begin_date[i]
+                    worksheet[f'F{start_block[0]+i}'] = deposit_sum[i]
                 elif total_bank_accounts == 1:
-                    worksheet[f'Q{start_blocks[1]+i}'] = temp_deposits[i]
+                    worksheet[f'E{start_block[1]+i}'] = begin_date[i]
+                    worksheet[f'F{start_block[1]+i}'] = deposit_sum[i]
                 elif total_bank_accounts == 2:
-                    worksheet[f'Q{start_blocks[2]+i}'] = temp_deposits[i]
+                    worksheet[f'E{start_block[2]+i}'] = begin_date[i]
+                    worksheet[f'F{start_block[2]+i}'] = deposit_sum[i]
                 elif total_bank_accounts == 3:
-                    worksheet[f'Q{start_blocks[3]+i}'] = temp_deposits[i]
-
+                    worksheet[f'E{start_block[3]+i}'] = begin_date[i]
+                    worksheet[f'F{start_block[3]+i}'] = deposit_sum[i]
+        except:
+            pass
 
     # try:
     ReadJSONData()
+    # output_file_name = "Report  for PK " + bookpk  + "_created_" + time.strftime("%Y%b%d-%H%M%S") + ".xlsx"
+    output_file_name = "Final.xlsx"
     workbook.save(output_file_name)
-    print(f"Excel File: \"{output_file_name}\", Successfully created!")
+    print(f"Excel File: \"{output_file_name}\", Successfully created!")    
 
 # Graphical User Interface
+
+def Call_Request_API(bookpk):
+    try:
+        # Calling API
+        with open(r'C:\\Ocrolus_Input\\Credential.txt', newline='') as csvfile:
+            reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+            for row in reader:
+                if row[0][0:4] == 'key:':
+                    uname = row[0][4:]
+                if row[0][0:7] == 'secret:':
+                    apikey = row[0][7:]
+
+        url_summary = 'https://api.ocrolus.com/v1/book/summary'
+        headers = {'content-type': 'application/json'}
+        params_summary = {
+                    'pk': bookpk,
+                    'extra_fields': 'estimated_revenue_txns_list, non_estimated_revenue_txns_list'}
+        ra = requests.get(url_summary, params=params_summary, auth=HTTPBasicAuth(uname, apikey), headers=headers)
+
+        summary = ra.content.decode("utf-8") 
+        with open('APIResponse.json', 'w') as file:
+            file.write(str(summary))
+
+    except Exception as e: 
+        print(str(e))
+        exit()
+
+    ReadAndWrite(bookpk)
+
+
 def GUI():
-    global input_file_name
-    global input_json_file
-    global output_file_name
-    
-    root = Tk()
-    root.title("Excel Generation")
-    root.geometry("700x550")
-    root.iconbitmap("excel.ico")
-    root.resizable(width=False, height=False)
 
-    input_file_name = StringVar()
-    output_file_name = StringVar()
-    input_json_file = StringVar()
+    HEIGHT = 500
+    WIDTH = 800
 
-    header = Label(root, text="Excel Generation", bg="yellow",
-                fg="black", font="Consolas 20 bold")
-    header.pack(fill="x")
+    root = tk.Tk()
 
-    input_excel = Label(root, text="Input Excel File Name (*.xlsx): ", font="Consolas 10 bold", anchor="w", bg="black", fg="white", width=53, justify=CENTER)
-    input_excel.pack(pady=20)
-    input_excel_text_field = Entry(root, bg="light yellow", textvariable=input_file_name, width=100, justify=CENTER)
-    input_excel_text_field.pack()
+    canvas = tk.Canvas(root, height=HEIGHT, width=WIDTH)
+    canvas.pack()
 
-    output_excel = Label(root, text="Output Excel File Name (*.xlsx): ", font="Consolas 10 bold", anchor="w", bg="black", fg="white", width=53, justify=CENTER)
-    output_excel.pack(pady=30)
-    output_excel_text_field = Entry(root, bg="light yellow", textvariable=output_file_name, width=100, justify=CENTER)
-    output_excel_text_field.pack()
+    root.title("Generate Excel Report")
 
-    input_json = Label(root, text="Input JSON File Name (*.json): ", font="Consolas 10 bold", anchor="w", bg="black", fg="white", width=53, justify=CENTER)
-    input_json.pack(pady=30)
-    input_json_text_field = Entry(root, bg="light yellow", textvariable=input_json_file, width=100, justify=CENTER)
-    input_json_text_field.pack()
+    frame = tk.Frame(root, bg='#80c1ff', bd=5)
+    frame.place(relx=0.5, rely=0.1, relwidth=0.75, relheight=0.1, anchor='n')
 
+    entry = tk.Entry(frame, font=40)
+    entry.place(relwidth=0.65, relheight=1)
 
-    gen_btn = Button(root, text="Generate", bg="blue", fg="white", font="Consolas 10 bold", anchor="w", width=13, command=ReadAndWrite)
-    gen_btn.pack(pady=40)
+    button = tk.Button(frame, text="Submit Book PK", font=40, command=lambda: Call_Request_API(entry.get()))
+    button.place(relx=0.7, relheight=1, relwidth=0.3)
 
-    input_file_name = str(input_file_name.get())
-    output_file_name = str(output_file_name.get())
-    input_json_file = str(input_json_file.get())
-    
+    lower_frame = tk.Frame(root, bg='#80c1ff', bd=10)
+    lower_frame.place(relx=0.5, rely=0.25, relwidth=0.75, relheight=0.6, anchor='n')
+
+    label = tk.Label(lower_frame)
+    label.place(relwidth=1, relheight=1)
+
     root.mainloop()
 
-ReadAndWrite()
+# GUI()
+ReadAndWrite("")
