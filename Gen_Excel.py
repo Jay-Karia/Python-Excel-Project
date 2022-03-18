@@ -112,28 +112,50 @@ def ReadAndWrite(bookpk):
             WriteRemainingData(deposit_sums, begin_dates, i)
 
         # Deposits Box (G:N)
+        json_dates = []
+        temp_json_dates = []
+        json_amounts = []
+        temp_json_amounts = []
         for i in range(0, total_bank_accounts):
             temp_dates_and_amount = {}
             temp_raw = data['response']['bank_accounts'][i]['non_estimated_revenue_txns_list']
             for j in range(0, len(temp_raw)):
                 temp_amounts = temp_raw[j]['amount']
                 temp_dates = temp_raw[j]['txn_date']
-                temp_dates_and_amount[temp_dates] = temp_amounts
+                print(f"{temp_dates}\t\t{temp_amounts}")
+                temp_dates_and_amount[temp_dates] = temp_dates
+                temp_json_dates.append(temp_dates)
+                temp_json_amounts.append(temp_amounts)
+            print("\n")
+
+            json_dates.append(temp_json_dates)
+            json_amounts.append(temp_json_amounts)
+
 
             temp_dates_and_amount = list(sorted(temp_dates_and_amount.items(), key = lambda x:datetime.strptime(x[0], '%m/%d/%Y'), reverse=False))
 
-            temp_amount_list = []
-            temp_dates_list = []
+            sorted_amounts = []
 
             for g in range(0, len(temp_dates_and_amount)):
-                temp_amount_list.append(temp_dates_and_amount[g][1])
-                temp_dates_list.append(temp_dates_and_amount[g][0])
+                try:
+                    sorted_amounts.append(temp_dates_and_amount[g][1])
+                    # temp_dates_list.append(temp_dates_and_amount[g][0])
+                except:
+                    pass
 
 
-            WriteInExcel_non_estimated_revenue_txns_list(temp_amount_list,excel_dates, temp_dates_list, i, temp_dates_and_amount, temp_amount_list)
+            WriteInExcel_non_estimated_revenue_txns_list(sorted_amounts,excel_dates, i, json_amounts, json_dates)
+
+        # for i in range(0, len(json_dates)):
+        #     try:
+        #         print(f'{json_dates[i]}\t\t\t{json_amounts[i]}')
+        #         pass
+        #     except:
+        #         pass
+        # print(excel_dates[0])
 
     # Other Write Methods
-    def WriteInExcel_non_estimated_revenue_txns_list(sorted_amounts, excel_dates, dates,total_bank_accounts, temp_dates_and_amount, amounts):
+    def WriteInExcel_non_estimated_revenue_txns_list(sorted_amounts, excel_dates,total_bank_accounts, json_amounts, json_dates):
         # months = []
         # years = []
         # date = []
@@ -230,8 +252,6 @@ def ReadAndWrite(bookpk):
     output_file_name = "Final.xlsx"
     workbook.save(output_file_name)
     print(f"Excel File: \"{output_file_name}\", Successfully created!")    
-
-# Graphical User Interface
 
 def Call_Request_API(bookpk):
     try:
